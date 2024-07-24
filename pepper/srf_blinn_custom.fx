@@ -87,8 +87,28 @@ DECLARE_FLOAT_WITH_DEFAULT(si_amount,	"SelfIllum Amount", "", 0, 1, float(1.0));
 
 #endif
 
+// 3-Channel Self Illum
+#if defined(SELFILLUM_3C)
+DECLARE_SAMPLER( selfillum_map_3c, "Self-Illum Map", "", "shaders/default_bitmaps/bitmaps/color_white.tif");
+#include "next_texture.fxh"
+DECLARE_RGB_COLOR_WITH_DEFAULT(si_color_r,	"Channel A Color", "", float3(1,0,0));
+#include "used_float3.fxh"
+DECLARE_FLOAT_WITH_DEFAULT(si_alpha_r,	"Channel A Alpha", "", 0, 1, float(1.0));
+#include "used_float.fxh"
+DECLARE_RGB_COLOR_WITH_DEFAULT(si_color_g,	"Channel B Color", "", float3(1,0,0));
+#include "used_float3.fxh"
+DECLARE_FLOAT_WITH_DEFAULT(si_alpha_g,	"Channel B Alpha", "", 0, 1, float(1.0));
+#include "used_float.fxh"
+DECLARE_RGB_COLOR_WITH_DEFAULT(si_color_b,	"Channel C Color", "", float3(1,0,0));
+#include "used_float3.fxh"
+DECLARE_FLOAT_WITH_DEFAULT(si_alpha_b,	"Channel C Alpha", "", 0, 1, float(1.0));
+#include "used_float.fxh"
+DECLARE_FLOAT_WITH_DEFAULT(si_intensity_3c,	"SelfIllum Intensity", "", 0, 1, float(1.0));
+#include "used_float.fxh"
+#endif
+
 // Self Illum Detail
-#if defined(SELFILLUM_MAP)
+#if defined(SELFILLUM_MAP) || defined(SELFILLUM_3C)
 DECLARE_BOOL_WITH_DEFAULT(illum_detail_on, "Self Illum Detail Enabled", "Self Illum Detail Enabled", false);
 #include "next_bool_parameter.fxh"
 DECLARE_SAMPLER(selfillum_detail_map, "Self-Illum Detail Map", "illum_detail_on", "shaders/default_bitmaps/bitmaps/color_white.tif");
@@ -606,7 +626,35 @@ float4 pixel_lighting(
     }
 #endif
 
+#if defined(SELFILLUM_3C)
+	// 3-Channel Self Illum
+    if (AllowSelfIllum(shader_data.common))
+    {
+		// Sample self-illumination texture
+    	float2 self_illum_3c_uv = transform_texcoord(uv, selfillum_map_3c_transform);
+        float3 self_illum_3c = sample2DGamma(selfillum_map_3c, self_illum_3c_uv).rgb;
 
+		if (illum_detail_on)
+        {
+            // Sample self-illumination detail texture
+            float2 self_illum_detail_uv = transform_texcoord(uv, selfillum_detail_map_transform);
+            float3 self_illum_detail = sample2DGamma(selfillum_detail_map, self_illum_detail_uv).rgb;
+
+            self_illum_3c = self_illum_3c * self_illum_detail;
+        }
+
+		// Apply different colors to each channel
+        float3 selfIllum_3c = float3(0, 0, 0);
+        selfIllum_3c += self_illum_3c.r * si_color_r * si_intensity_3c * si_alpha_r;
+        selfIllum_3c += self_illum_3c.g * si_color_g * si_intensity_3c * si_alpha_g;
+        selfIllum_3c += self_illum_3c.b * si_color_b * si_intensity_3c * si_alpha_b;
+
+        out_color.rgb += selfIllum_3c;
+
+		// Output self-illum intensity as linear luminance of the added value
+        shader_data.common.selfIllumIntensity = GetLinearColorIntensity(selfIllum_3c);
+	}
+#endif
 
 #if defined(PLASMA)
 	out_color.rgb += GetPlasmaColor(pixel_shader_input, 0.0f);
