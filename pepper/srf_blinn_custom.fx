@@ -29,13 +29,13 @@ DECLARE_SAMPLER( specular_map, "Specular Map", "Specular Map", "shaders/default_
 #include "next_texture.fxh"
 
 // Option to enable alpha-test
-DECLARE_BOOL_WITH_DEFAULT(alpha_test_on, "Alpha Test Enabled", "Alpha Test Enabled", false);
+DECLARE_BOOL_WITH_DEFAULT(alpha_test_on, "Alpha Test Enabled", "", false);
 #include "next_bool_parameter.fxh"
 
-DECLARE_SAMPLER( alpha_test_map, "Alpha Test Map", "Alpha Test Map", "shaders/default_bitmaps/bitmaps/default_diff.tif");
+DECLARE_SAMPLER( alpha_test_map, "Alpha Test Map", "alpha_test_on", "shaders/default_bitmaps/bitmaps/default_diff.tif");
 #include "next_texture.fxh"
 // Alpha Test Threshold
-DECLARE_FLOAT_WITH_DEFAULT(alpha_test_threshold, "Alpha Test Threshold", "", 0, 1, float(0.1));
+DECLARE_FLOAT_WITH_DEFAULT(alpha_test_threshold, "Alpha Test Threshold", "alpha_test_on", 0, 1, float(0.1));
 #include "used_float.fxh"
 
 #if defined(REFLECTION) || defined(SELFILLUM)
@@ -73,7 +73,7 @@ DECLARE_FLOAT_WITH_DEFAULT(diffuse_intensity,		"Diffuse Intensity", "", 0, 1, fl
 
 // Self Illum
 #if defined(SELFILLUM_MAP)
-DECLARE_SAMPLER( selfillum_map, "Self-Illum Map", "Self-Illum Map", "shaders/default_bitmaps/bitmaps/color_white.tif");
+DECLARE_SAMPLER( selfillum_map, "Self-Illum Map", "", "shaders/default_bitmaps/bitmaps/color_white.tif");
 #include "next_texture.fxh"
 #endif
 
@@ -91,7 +91,7 @@ DECLARE_FLOAT_WITH_DEFAULT(si_amount,	"SelfIllum Amount", "", 0, 1, float(1.0));
 #if defined(SELFILLUM_MAP)
 DECLARE_BOOL_WITH_DEFAULT(illum_detail_on, "Self Illum Detail Enabled", "Self Illum Detail Enabled", false);
 #include "next_bool_parameter.fxh"
-DECLARE_SAMPLER(selfillum_detail_map, "Self-Illum Detail Map", "Self-Illum Detail Map", "shaders/default_bitmaps/bitmaps/color_white.tif");
+DECLARE_SAMPLER(selfillum_detail_map, "Self-Illum Detail Map", "illum_detail_on", "shaders/default_bitmaps/bitmaps/color_white.tif");
 #include "next_texture.fxh"
 #endif
 
@@ -211,7 +211,7 @@ void pixel_pre_lighting(
 {
 	float2 uv = pixel_shader_input.texcoord.xy;
 
-if (alpha_test_on)
+	if (alpha_test_on)
 	{
 		// Sample the alpha test texture
 		float2 alpha_test_transformed_uv = transform_texcoord(uv, alpha_test_map_transform);
@@ -380,7 +380,7 @@ float4 pixel_lighting(
 {
 	float2 uv = pixel_shader_input.texcoord.xy;
 
-if (alpha_test_on)
+	if (alpha_test_on)
 	{
 		// Sample the alpha test texture
 		float2 alpha_test_transformed_uv = transform_texcoord(uv, alpha_test_map_transform);
