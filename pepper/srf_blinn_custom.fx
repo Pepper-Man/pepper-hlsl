@@ -233,6 +233,7 @@ void pixel_pre_lighting(
 
 	if (alpha_test_on)
 	{
+		#define MATERIAL_SHADER_ANNOTATIONS     <bool is_alpha_clip = true;>
 		// Sample the alpha test texture
 		float2 alpha_test_transformed_uv = transform_texcoord(uv, alpha_test_map_transform);
 		float alpha_test_value = sample2DGamma(alpha_test_map, alpha_test_transformed_uv).a;
@@ -402,6 +403,7 @@ float4 pixel_lighting(
 
 	if (alpha_test_on)
 	{
+		#define MATERIAL_SHADER_ANNOTATIONS     <bool is_alpha_clip = true;>
 		// Sample the alpha test texture
 		float2 alpha_test_transformed_uv = transform_texcoord(uv, alpha_test_map_transform);
 		float alpha_test_value = sample2DGamma(alpha_test_map, alpha_test_transformed_uv).a;
