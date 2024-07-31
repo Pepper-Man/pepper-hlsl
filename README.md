@@ -8,6 +8,7 @@ A collection of modified HLSL source files that add various shader features and 
 - Self illumination detail texture support (multiplied over base self-illum)
 - Bungie-style 3-channel self illumination
 - Bungie-style "plasma" self illumination (alpha mask, 2x noise maps)
+- Simple parallax from height map
 
 # Usage
 - Download the full shader source for either [Halo 4](https://github.com/halohlsl/Halo4-Shader-Source) or [Halo 2AMP](https://github.com/halohlsl/Halo2AMP-Shader-Source) depending on the engine you are using.
@@ -19,3 +20,6 @@ A collection of modified HLSL source files that add various shader features and 
 # Legal Disclaimer
 - All original shader source code downloaded from [the halohlsl repository](https://github.com/halohlsl), extracted from the publicly available Editing Kit(s)
 - All original shader source code is property/copyright of 343 Industries/Certain Affinity, I own nothing. See file headers
+
+# Credits
+- TheHostileNegotiator for answering my many questions about HLSL and for the parallax code.
