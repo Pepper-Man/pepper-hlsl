@@ -124,6 +124,14 @@ DECLARE_FLOAT_WITH_DEFAULT(diffuse_mask_reflection,	"Diffuse Mask Reflection", "
 DECLARE_FLOAT_WITH_DEFAULT(diffuse_alpha_mask_specular, "Diffuse Alpha Masks Specular", "", 0, 1, float(0.0));
 #include "used_float.fxh"
 
+#if defined(PARALLAX)
+DECLARE_SAMPLER(parallax_map, "Parallax Height Map", "", "shaders/default_bitmaps/bitmaps/gray_50_percent.tif");
+#include "next_texture.fxh"
+
+DECLARE_FLOAT_WITH_DEFAULT(parallax_scale, "Height scale", "", 0, 1, float(0.1));
+#include "used_float.fxh"
+#endif
+
 // Specular
 DECLARE_RGB_COLOR_WITH_DEFAULT(specular_color,		"Specular Color", "", float3(1,1,1));
 #include "used_float3.fxh"
@@ -251,10 +259,6 @@ void pixel_pre_lighting(
 		color_detail_uv = pixel_shader_input.texcoord.zw;
 #endif
 
-
-
-	shader_data.common.shaderValues.x = 1.0f; 			// Default specular mask
-
 	// Calculate the normal map value
     {
 		// Sample normal maps
@@ -289,11 +293,36 @@ void pixel_pre_lighting(
 		shader_data.common.normal = mul(shader_data.common.normal, shader_data.common.tangent_frame);
     }
 
+	shader_data.common.shaderValues.x = 1.0f; 			// Default specular mask
+
+    {
+		#if defined(PARALLAX)
+			float3 view = shader_data.common.view_dir_distance.xyz;
+			// Sample the height map
+			float2 parallax_map_transformed_uv = transform_texcoord(uv, parallax_map_transform);
+			float height = (sample2DGamma(parallax_map, parallax_map_transformed_uv).g - 0.5f) * parallax_scale;
+
+			// Adjust the view vector to avoid extreme parallax
+			view.z = max(view.z, 0.8f);
+			view = normalize(view);
+
+			// Calculate the parallax offset
+			float2 parallax_offset= view.xy * height / view.z;
+
+			// Apply the parallax offset to the texture coordinates
+			float2 parallax_texcoord = parallax_map_transformed_uv + parallax_offset;
+
+			// Sample color map using parallax-adjusted coordinates
+        	float2 color_map_uv = transform_texcoord(parallax_texcoord, color_map_transform);
+        	shader_data.common.albedo = sample2DGamma(color_map, color_map_uv);
+    	#else
+        	// Sample color map using original coordinates
+        	float2 color_map_uv = transform_texcoord(uv, color_map_transform);
+        	shader_data.common.albedo = sample2DGamma(color_map, color_map_uv);
+		#endif
 
 
-    {// Sample color map.
-	    float2 color_map_uv = transform_texcoord(uv, color_map_transform);
-	    shader_data.common.albedo = sample2DGamma(color_map, color_map_uv);
+	
 
 #if defined(PRIMARY_CHANGE_COLOR) || defined (PRIMARY_CHANGE_COLOR_MAP)
         // apply primary change color
