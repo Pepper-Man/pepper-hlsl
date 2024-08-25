@@ -15,6 +15,7 @@
 #endif
 
 #define DECAL_OUTPUT_COLOR
+#define PEPPER_DECAL_TINT
 
 #if !defined(DECAL_OUTPUT_NORMAL)
 #define DISABLE_NORMAL
@@ -61,15 +62,14 @@ DECLARE_SAMPLER(normal_map, "Normal Map", "Normal Map", "shaders/default_bitmaps
 #include "next_texture.fxh"
 #endif
 
-#if defined(DECAL_UNMODULATED_TINT) || defined(DECAL_MODULATED_TINT)
-DECLARE_RGB_COLOR_WITH_DEFAULT(tint_color,			"Tint Color", "", float3(1, 1, 1));
+DECLARE_RGB_COLOR_WITH_DEFAULT(tint_color, "Tint Color", "", float3(1, 1, 1));
 #include "used_float3.fxh"
-#endif
 
-#if defined(DECAL_MODULATED_TINT)
+DECLARE_FLOAT_WITH_DEFAULT(tint_intensity,	"Tint Intensity", "", 0, 1, float(0.0));
+#include "used_float.fxh"
+
 DECLARE_FLOAT_WITH_DEFAULT(tint_modulation_factor,	"Tint Modulation Factor", "", 0, 1, float(1.0));
 #include "used_float.fxh"
-#endif
 
 #if defined(DECAL_GRADIENT_MODULATED_TINT)
 DECLARE_SAMPLER(gradient_map, "Gradient Map", "Gradient Map", "shaders/default_bitmaps/bitmaps/gradient_white_to_black.tif");
@@ -170,6 +170,11 @@ void pixel_pre_lighting(
     #elif defined(DECAL_GRADIENT_MODULATED_TINT)
     float2 sampleCoords = float2(pixel_shader_input.texcoord.z, 0.5f);
     shader_data.common.albedo *= sample2D(gradient_map, sampleCoords);
+    #elif defined(PEPPER_DECAL_TINT)
+    float3 modulated_tint_color = lerp(float3(1.0, 1.0, 1.0), tint_color.rgb, tint_modulation_factor);
+    shader_data.common.albedo.rgb = lerp(shader_data.common.albedo.rgb, 
+                                     shader_data.common.albedo.rgb * modulated_tint_color, 
+                                     tint_intensity);
     #endif
 
     #if defined(FORGE_HOTNESS)
