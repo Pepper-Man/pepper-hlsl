@@ -9,7 +9,8 @@ A collection of modified HLSL source files that add various shader features and 
 - Bungie-style 3-channel self illumination
 - Bungie-style "plasma" self illumination (alpha mask, 2x noise maps)
 - Simple parallax from height map
-- Decals, with optional alpha map and normal/bump map
+- Decals with optional alpha map and normal/bump map
+- Reach-style decal tinting with intensity and modulation sliders
 
 # Usage
 - Download the full shader source for either [Halo 4](https://github.com/halohlsl/Halo4-Shader-Source) or [Halo 2AMP](https://github.com/halohlsl/Halo2AMP-Shader-Source) depending on the engine you are using.

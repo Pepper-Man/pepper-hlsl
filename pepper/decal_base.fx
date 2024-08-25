@@ -65,7 +65,7 @@ DECLARE_SAMPLER(normal_map, "Normal Map", "Normal Map", "shaders/default_bitmaps
 DECLARE_RGB_COLOR_WITH_DEFAULT(tint_color, "Tint Color", "", float3(1, 1, 1));
 #include "used_float3.fxh"
 
-DECLARE_FLOAT_WITH_DEFAULT(tint_intensity,	"Tint Intensity", "", 0, 1, float(0.0));
+DECLARE_FLOAT_WITH_DEFAULT(tint_intensity,	"Tint Intensity", "", 0, 1, float(1.0));
 #include "used_float.fxh"
 
 DECLARE_FLOAT_WITH_DEFAULT(tint_modulation_factor,	"Tint Modulation Factor", "", 0, 1, float(1.0));
@@ -171,10 +171,9 @@ void pixel_pre_lighting(
     float2 sampleCoords = float2(pixel_shader_input.texcoord.z, 0.5f);
     shader_data.common.albedo *= sample2D(gradient_map, sampleCoords);
     #elif defined(PEPPER_DECAL_TINT)
-    float3 modulated_tint_color = lerp(float3(1.0, 1.0, 1.0), tint_color.rgb, tint_modulation_factor);
-    shader_data.common.albedo.rgb = lerp(shader_data.common.albedo.rgb, 
-                                     shader_data.common.albedo.rgb * modulated_tint_color, 
-                                     tint_intensity);
+    float recip_sqrt_3= 1.0f / 1.7320508f;
+    float Y= recip_sqrt_3 * length(shader_data.common.albedo.rgb);
+    shader_data.common.albedo.rgb *= lerp(tint_color.rgb, 1.0f, tint_modulation_factor * Y) * tint_intensity;
     #endif
 
     #if defined(FORGE_HOTNESS)
