@@ -146,7 +146,8 @@ void pixel_pre_lighting(
         #endif
 
         #if defined(VECTOR_ALPHA_MAP)
-        	float vectorAlpha = GetVectorAlpha(uv);            // vector alpha uses the unmodified decal UV
+        	float vectorAlpha = GetVectorAlpha(uv);   // vector alpha uses the unmodified decal UV
+            vectorAlpha = max(vectorAlpha, 0.1f);    // Ensure some minimum visibility     
         	shader_data.common.albedo.rgb *= vectorAlpha;      // vector alpha modulated on color
         	shader_data.common.albedo.w = vectorAlpha;
         #endif
